@@ -1,0 +1,155 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Produtos - Nunes Sports</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            margin-top: 10px;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>CRUD de Produtos - Nunes Sports</h1>
+
+    <div class="form-container">
+        <h2>Adicionar/Editar Produto</h2>
+        <form id="productForm">
+            <input type="hidden" id="productId">
+            <label for="name">Nome:</label>
+            <input type="text" id="name" required>
+            <label for="code">Código:</label>
+            <input type="text" id="code" required>
+            <label for="description">Descrição:</label>
+            <input type="text" id="description" required>
+            <label for="price">Preço:</label>
+            <input type="number" id="price" step="0.01" required>
+            <button type="submit">Salvar</button>
+        </form>
+    </div>
+
+    <h2>Lista de Produtos</h2>
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Preço</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Produtos serão inseridos aqui -->
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const productForm = document.getElementById('productForm');
+            const productTable = document.getElementById('productTable').getElementsByTagName('tbody')[0];
+            let products = JSON.parse(localStorage.getItem('products')) || [];
+
+            function renderTable() {
+                productTable.innerHTML = '';
+                products.forEach((product, index) => {
+                    let row = productTable.insertRow();
+                    row.innerHTML = `
+                        <td>${product.name}</td>
+                        <td>${product.code}</td>
+                        <td>${product.description}</td>
+                        <td>${product.price}</td>
+                        <td>
+                            <button onclick="editProduct(${index})">Editar</button>
+                            <button onclick="deleteProduct(${index})">Deletar</button>
+                        </td>
+                    `;
+                });
+            }
+
+            function saveProduct() {
+                const id = document.getElementById('productId').value;
+                const name = document.getElementById('name').value;
+                const code = document.getElementById('code').value;
+                const description = document.getElementById('description').value;
+                const price = document.getElementById('price').value;
+
+                if (id === '') {
+                    // Adicionar novo produto
+                    products.push({ name, code, description, price });
+                } else {
+                    // Editar produto existente
+                    products[id] = { name, code, description, price };
+                }
+
+                localStorage.setItem('products', JSON.stringify(products));
+                renderTable();
+                productForm.reset();
+                document.getElementById('productId').value = '';
+            }
+
+            function editProduct(index) {
+                const product = products[index];
+                document.getElementById('productId').value = index;
+                document.getElementById('name').value = product.name;
+                document.getElementById('code').value = product.code;
+                document.getElementById('description').value = product.description;
+                document.getElementById('price').value = product.price;
+            }
+
+            function deleteProduct(index) {
+                products.splice(index, 1);
+                localStorage.setItem('products', JSON.stringify(products));
+                renderTable();
+            }
+
+            productForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                saveProduct();
+            });
+
+            window.editProduct = editProduct;
+            window.deleteProduct = deleteProduct;
+
+            renderTable();
+        });
+    </script>
+
+</body>
+</html>
